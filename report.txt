@@ -1,0 +1,223 @@
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                     How HACKER gained access                          +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Please outline the steps the attacker took to gain access to the system.
+This can be broken down into different phases, based on their efforts
+to elevate privileges. Fill in the sections below that apply.
+
++-----------------------------------------------------------------------+
+| As unprivileged (system or services user) attackers approach was      |
++-----------------------------------------------------------------------+
+	A description of hackers approach, while an unprivileged user.
+
+		YOUR ANSWER GOES HERE
+
+	-----------------------------------------------------------------
+	How I know: (command I executed, sample of the evidence, explanation)
+	-----------------------------------------------------------------
+	COMMAND: YOUR ANSWER GOES HERE
+
+	EVIDENCE: (sample of the evidence)
+
+		YOUR ANSWER GOES HERE
+
+	EXPLANATION: (explain the evidence)
+
+		YOUR ANSWER GOES HERE
+
+	-----------------------------------------------------------------
+	COMMAND: YOUR ANSWER GOES HERE
+
+	EVIDENCE: (sample of the evidence)
+
+		YOUR ANSWER GOES HERE
+
+	EXPLANATION: (explain the evidence)
+
+		YOUR ANSWER GOES HERE
+	-----------------------------------------------------------------
+
++-----------------------------------------------------------------------+
+| As Privileged for SERVICE the attackers approach was                  |
++-----------------------------------------------------------------------+
+	First SERVICE account broken: YOUR ANSWER GOES HERE
+	Date and time attacker broke account: YOUR ANSWER GOES HERE
+	Evidence for the above (command, output, explanation): 
+
+		YOUR ANSWER GOES HERE
+
+	-----------------------------------------------------------------
+	A description of hackers approach, while an unprivileged user.
+
+		YOUR ANSWER GOES HERE
+
+	-----------------------------------------------------------------
+	How I know: (command I executed, sample of the evidence, explanation)
+	-----------------------------------------------------------------
+	COMMAND: YOUR ANSWER GOES HERE
+
+	EVIDENCE: (sample of the evidence)
+
+		YOUR ANSWER GOES HERE
+
+	EXPLANATION: (explain the evidence)
+
+		YOUR ANSWER GOES HERE
+
+	-----------------------------------------------------------------
+	COMMAND: YOUR ANSWER GOES HERE
+
+	EVIDENCE: (sample of the evidence)
+
+		YOUR ANSWER GOES HERE
+
+	EXPLANATION: (explain the evidence)
+
+		YOUR ANSWER GOES HERE
+	-----------------------------------------------------------------
+
++-----------------------------------------------------------------------+
+| As a system user: before obtaining root                               |
++-----------------------------------------------------------------------+
+	First system account broken: YOUR ANSWER GOES HERE
+	Date and time attacker broke account: YOUR ANSWER GOES HERE
+	Evidence for the above (command, output, explanation): 
+
+		YOUR ANSWER GOES HERE
+
+	-----------------------------------------------------------------
+	A description of hackers approach, while an unprivileged user.
+
+		YOUR ANSWER GOES HERE
+
+	-----------------------------------------------------------------
+	How I know: (command I executed, sample of the evidence, explanation)
+	-----------------------------------------------------------------
+	COMMAND: YOUR ANSWER GOES HERE
+
+	EVIDENCE: (sample of the evidence)
+
+		YOUR ANSWER GOES HERE
+
+	EXPLANATION: (explain the evidence)
+
+		YOUR ANSWER GOES HERE
+
+	-----------------------------------------------------------------
+	COMMAND: YOUR ANSWER GOES HERE
+
+	EVIDENCE: (sample of the evidence)
+
+		YOUR ANSWER GOES HERE
+
+	EXPLANATION: (explain the evidence)
+
+		YOUR ANSWER GOES HERE
+	-----------------------------------------------------------------
+
++-----------------------------------------------------------------------+
+| Privilege: Got root!!!                                                |
++-----------------------------------------------------------------------+
+	First system account broken: YOUR ANSWER GOES HERE
+	Date and time attacker broke account: YOUR ANSWER GOES HERE
+	Evidence for the above (command, output, explanation): 
+
+		YOUR ANSWER GOES HERE
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++                          System Changes                               +
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+-------------------------------------------------------------------------
+HACKER CHANGED: 
+
+EVIDENCE: 
+
+WHY: 
+
+IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+-------------------------------------------------------------------------
+
